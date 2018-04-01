@@ -1,0 +1,1 @@
+E, [2018-03-31T12:25:06.561208 #4806] ERROR -- : Mysql2::Error: vtgate: http://macondo:15001/: unsupported construct: SET @@wait_timeout = 2147483: SET @@wait_timeout = 2147483
