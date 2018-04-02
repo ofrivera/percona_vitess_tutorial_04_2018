@@ -18,7 +18,7 @@ create table feeds(
 create table feed_items(
        id bigint not null,
        feed_id bigint not null,
-       feed_type char(4) not null,
+       item_type char(4) not null,
        created_at bigint not null,
        payload text not null,
        primary key(feed_id, id)

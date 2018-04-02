@@ -9,12 +9,23 @@ class Feed
     @id = args[:id]
   end
 
+  def add_text_item(text)
+    payload = FeedItem.text_feed_item_payload(text)
+    feed_item = FeedItem.new(feed_id: self.id, item_type: 't', payload: payload)
+    feed_item.save!
+    feed_item
+  end
+
+  def self.find_by_id(id)
+    DbDAO.client.select_feed(id)
+  end
+
   def self.find_by_user_id(user_id)
     DbDAO.client.select_user_feeds(user_id)
   end
 
   def save!
-    return true if self.id != nil
+    return self if self.id != nil
     self.created_at =  self.updated_at = Time.now.to_i
     id = DbDAO.client.insert_feed(self)
     self.id = id

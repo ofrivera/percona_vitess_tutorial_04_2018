@@ -3,9 +3,10 @@ class MySQLDao
 
   INSERT_USER="INSERT INTO users (id, name, email) VALUES(%d, '%s', '%s')"
   INSERT_FEED="INSERT INTO feeds (id, user_id, description, created_at, updated_at) VALUES (%d, %d ,'%s', %d, %d)"
-  INSERT_FEED_ITEM="INSERT INTO feed_items (id, feed_id, feed_type, created_at, payload) VALUES (%d, %d, '%s', %d, %d, '%s')"
+  INSERT_FEED_ITEM="INSERT INTO feed_items (id, feed_id, item_type, created_at, payload) VALUES (%d, %d, '%s', %d, '%s')"
   SELECT_USER_FEEDS="SELECT * from feeds where user_id = %d LIMIT %d"
-  SELECT_FEED_ITEMS="SELECT * from feed_items where feed_id = %d LIMIT %d"
+  SELECT_FEED="SELECT * from feeds where id = %d"
+  SELECT_FEED_ITEMS="SELECT * from feed_items where feed_id = %d AND created_at >= %d ORDER by created_at desc LIMIT %d"
   SELECT_SUBSCRIBED_FEEDS="SELECT * from feed_items where feed_id IN (%s) LIMIT %d"
 
   def initialize(user, password, host, port, database)
@@ -53,18 +54,37 @@ class MySQLDao
     raw_feeds.map { |raw_feed| Feed.new(ActiveSupport::HashWithIndifferentAccess.new(raw_feed))}
   end
 
+  def select_feed(feed_id)
+    raw_feed = xquery(
+      SELECT_FEED,
+      feed_id
+    ).to_a.first
+    return nil unless raw_feed
+    Feed.new(ActiveSupport::HashWithIndifferentAccess.new(raw_feed))
+  end
+
   def insert_feed_item(feed_item)
     feed_item_id = @feed_item_ids
     xquery(
-      INSERT_FEED,
+      INSERT_FEED_ITEM,
       feed_item_id,
       feed_item.feed_id,
-      feed_item.feed_type,
+      feed_item.item_type,
       feed_item.created_at,
       feed_item.payload
     )
     @feed_item_ids += 1
     return feed_item_id
+  end
+
+  def select_feed_items(feed_id, since, limit)
+    raw_feed_items = xquery(
+      SELECT_FEED_ITEMS,
+      feed_id,
+      since,
+      limit
+    ).to_a
+    raw_feed_items.map { |raw_feed_item| FeedItem.new(ActiveSupport::HashWithIndifferentAccess.new(raw_feed_item))}
   end
 
   def xquery(*args)
