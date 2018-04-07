@@ -3,7 +3,11 @@ class DbDAO
     def client
       @client ||= begin
                     if ENV['DB_ADAPTER'] == 'mysql'
-                      MySQLDao.new('mysql_user', 'mysql_password', 'macondo', '15306', 'test_keyspace')
+                      MySQLDao.new(ENV['MYSQL_USER'],
+                                   ENV['MYSQL_PASSWORD'],
+                                   ENV['MYSQL_HOST'],
+                                   ENV['MYSQL_PORT'],
+                                   ENV['MYSQL_DB_NAME'])
                     elsif ENV['DB_ADAPTER'] == 'vitess'
                       fail "todo"
                     else

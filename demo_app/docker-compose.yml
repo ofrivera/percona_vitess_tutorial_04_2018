@@ -2,5 +2,11 @@ version: '3'
 services:
   app:
     build: .
+    environment:
+      - MYSQL_HOST=192.168.1.177 # Set to vitess cluster
+      - MYSQL_USER=mysql_user
+      - MYSQL_PASSWORD=mysql_password
+      - MYSQL_PORT=15306
+      - MYSQL_DB_NAME=test_keyspace
     ports:
      - "3000:3000"
