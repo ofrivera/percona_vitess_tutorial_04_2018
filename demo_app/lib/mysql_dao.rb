@@ -6,7 +6,7 @@ class MySQLDao
   INSERT_FEED_ITEM="INSERT INTO feed_items (id, feed_id, item_type, created_at, payload) VALUES (%d, %d, '%s', %d, '%s')"
   SELECT_USER_FEEDS="SELECT * from feeds where user_id = %d LIMIT %d"
   SELECT_FEED="SELECT * from feeds where id = %d"
-  SELECT_FEED_ITEMS="SELECT * from feed_items where feed_id = %d AND created_at >= %d ORDER by created_at desc LIMIT %d"
+  SELECT_FEED_ITEMS="SELECT * from feed_items where feed_id = %d AND created_at > %d ORDER by created_at desc LIMIT %d"
   SELECT_SUBSCRIBED_FEEDS="SELECT * from feed_items where feed_id IN (%s) LIMIT %d"
 
   def initialize(user, password, host, port, database)

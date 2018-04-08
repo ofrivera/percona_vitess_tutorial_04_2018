@@ -2,6 +2,7 @@ require 'logger'
 require 'sinatra/base'
 require 'sinatra/json'
 require 'active_support/core_ext/hash/indifferent_access'
+require 'sinatra-websocket'
 require 'bundler'
 Bundler.require
 
@@ -13,6 +14,9 @@ class App < Sinatra::Base
   configure :production, :development do
     enable :logging
   end
+
+  set :sockets, {}
+
 
   get '/' do
     json "ok": 200
@@ -48,6 +52,42 @@ class App < Sinatra::Base
     json @feed_items.map(&:to_json)
   end
 
+  get '/subscribe/activity_feeds' do
+    if !request.websocket?
+      response = { code: 1, status: '422', title: "This endpoint should be used with websocket connections"}
+      halt 422, json(response)
+    else
+      request.websocket do |ws|
+        feed_ids = params['feed_ids'].split(',')
+        if feed_ids.empty?
+          response = { code: 1, status: '422', title: "Invalid feed ids provided"}
+          halt 422, json(response)
+        end
+
+        ws.onmessage do |msg|
+          logger.info("Got message #{msg}")
+          #EM.next_tick { settings.sockets.each{|s| s.send(msg) } }
+        end
+        ws.onopen do
+          logger.info("Opened a new websocket for: #{feed_ids}")
+          ws.send("Successfully subscribed to socket for feeds: ")
+          feed_ids.each do |feed_id|
+            settings.sockets[feed_id] = [] unless settings.sockets[feed_id]
+            settings.sockets[feed_id] << ws
+          end
+        end
+
+        ws.onclose do
+          logger.info("websocket closed")
+          settings.sockets.values.each do |sockets|
+            sockets.delete(ws)
+          end
+          logger.info("Active connections count: #{settings.sockets.values.flatten.count}")
+        end
+      end
+    end
+  end
+
   post '/activity_feeds/:feed_id' do |feed_id|
     @feed = Feed.find_by_id(feed_id)
     response = { code: 4, status: '404', title: 'feed not found' }
@@ -58,6 +98,10 @@ class App < Sinatra::Base
     halt 422, json(response) unless  json_feed_item
     halt 422, json(response) unless  FeedItemTypes.valid?(json_feed_item['type'])
     @feed.add_text_item(json_feed_item[:text])
+    if settings.sockets[feed_id]
+      msg = {data: { type: 'feed_updated', feed_id: feed_id}}.to_json
+      EM.next_tick { settings.sockets[feed_id].each{|s| s.send(msg) } }
+    end
     status 201
   end
 end
