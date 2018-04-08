@@ -10,3 +10,5 @@ gem 'mysql2-cs-bind'
 gem 'sinatra-contrib'
 gem 'activesupport', '~> 5.0'
 gem 'loader'
+gem 'rest-client'
+
