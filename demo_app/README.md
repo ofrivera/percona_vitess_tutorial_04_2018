@@ -39,8 +39,8 @@ Notice that the client that was subscribed to two feeds ids now it's getting err
 
 8) Start everything again. Start the writers and clients again:
 ```
-docker-compose exec -e FEED_ID=7 app /bin/bash -c 'ruby cli/client.rb # Same feed id as previous run
-docker-compose exec -e FEED_ID=8 app /bin/bash -c 'ruby cli/client.rb # Same feed id as previous run
+docker-compose exec -e FEED_ID=7 app /bin/bash -c 'ruby cli/client.rb'  # Use same feed id as first writer from previous run
+docker-compose exec -e FEED_ID=8 app /bin/bash -c 'ruby cli/client.rb'  # Use Same feed id as first writer from previous run
 docker-compose exec app /bin/bash -c 'ruby cli/client.rb 7,8'
 docker-compose exec app /bin/bash -c 'ruby cli/client.rb 7'
 ```
