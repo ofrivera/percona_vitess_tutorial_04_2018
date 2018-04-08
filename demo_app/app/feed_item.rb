@@ -24,6 +24,14 @@ class FeedItem
     DbDAO.client.select_feed_items(feed_id, since, 100)
   end
 
+  def self.find_by_feed_ids(args = {})
+    since = args[:since] || 0
+    feed_ids = args.fetch(:feed_ids)
+    DbDAO.client.select_feed_items_for_subscription(feed_ids, since, 100)
+  end
+
+
+
   def self.text_feed_item_payload(text)
     { text: text }.to_json
   end

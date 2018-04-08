@@ -44,6 +44,19 @@ class App < Sinatra::Base
     end
   end
 
+  get '/activity_feeds/subscription' do
+    feed_ids = params[:feed_ids].split(',')
+    if feed_ids.empty?
+      response = { code: 1, status: '422', title: "invalid subscription ids"}
+      halt 422, json(response)
+    end
+    @feed_items = FeedItem.find_by_feed_ids(
+      since: params[:since],
+      feed_ids: feed_ids
+    )
+    json @feed_items.map(&:to_json)
+  end
+
   get '/activity_feeds/:feed_id' do |feed_id|
     @feed_items = FeedItem.find_by_feed_id(
       feed_id: feed_id,

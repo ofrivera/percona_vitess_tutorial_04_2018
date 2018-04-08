@@ -6,21 +6,28 @@ PORT = ENV['APP_PORT'] || '3000'
 URL = "http://#{HOST}:#{PORT}"
 ITERATIONS = ENV['NUM_ITERATIONS'] || 1000
 SLEEP_TIME = ENV['SLEEP_TIME'] || 1
+FEED_ID = ENV['FEED_ID']
 
 
+STDOUT.sync = true
 user = { "data": { "name": "rafael", "email": "rafael+#{SecureRandom.hex}@gmail.com" } }
 
-response = RestClient.post(
-  URL + "/users",
-  user.to_json,
-  {content_type: :json, accept: :json})
+feed_id = FEED_ID
 
-raise "Couldn't create user #{response}" unless response.code == 201
+unless FEED_ID
+  response = RestClient.post(
+    URL + "/users",
+    user.to_json,
+    {content_type: :json, accept: :json})
 
-user = JSON.parse(response.body)
+  raise "Couldn't create user #{response}" unless response.code == 201
 
-puts "Created the following user: #{user}"
-feed_id = user["data"]["feeds"][0]["data"]["id"]
+  user = JSON.parse(response.body)
+
+  puts "Created the following user: #{user}"
+  feed_id = user["data"]["feeds"][0]["data"]["id"]
+end
+
 puts "Going to start posting feed items to user feed id #{feed_id}"
 (1..ITERATIONS).each do |i|
   feed_item = {	"data": { "type": "t", "text": "This is a random post: #{SecureRandom.hex}" } }
@@ -30,7 +37,7 @@ puts "Going to start posting feed items to user feed id #{feed_id}"
     {content_type: :json, accept: :json})
   fail "Failed to create feed, aborting... " unless response.code == 201
   sleep SLEEP_TIME
-  puts "Successfully created activity feed item"
+  puts "Successfully created activity item in feed_id: #{feed_id}"
 end
 
 puts "Done..."

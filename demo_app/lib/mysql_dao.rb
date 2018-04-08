@@ -7,7 +7,10 @@ class MySQLDao
   SELECT_USER_FEEDS="SELECT * from feeds where user_id = %d LIMIT %d"
   SELECT_FEED="SELECT * from feeds where id = %d"
   SELECT_FEED_ITEMS="SELECT * from feed_items where feed_id = %d AND created_at > %d ORDER by created_at desc LIMIT %d"
-  SELECT_SUBSCRIBED_FEEDS="SELECT * from feed_items where feed_id IN (%s) LIMIT %d"
+
+  def select_subscribeed_feeds_sql
+    "SELECT DISTINCT * from feed_items where feed_id IN (%s) AND created_at > %d ORDER BY created_at desc LIMIT %d"
+  end
 
   def initialize(user, password, host, port, database)
     @client = Mysql2::Client.new(
@@ -81,6 +84,16 @@ class MySQLDao
     raw_feed_items = xquery(
       SELECT_FEED_ITEMS,
       feed_id,
+      since,
+      limit
+    ).to_a
+    raw_feed_items.map { |raw_feed_item| FeedItem.new(ActiveSupport::HashWithIndifferentAccess.new(raw_feed_item))}
+  end
+
+  def select_feed_items_for_subscription(feed_ids, since, limit)
+    raw_feed_items = xquery(
+      select_subscribeed_feeds_sql,
+      feed_ids.join(','),
       since,
       limit
     ).to_a
