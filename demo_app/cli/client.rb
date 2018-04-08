@@ -48,4 +48,3 @@ EM.run {
     exit 0
   end
 }
-
