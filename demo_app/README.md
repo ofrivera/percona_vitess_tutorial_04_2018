@@ -27,15 +27,22 @@ docker-compose exec app /bin/bash -c 'ruby cli/client.rb
 
 5) Change the vschema to be sharded
 
+```
 ./lvtctl.sh ApplyVschema -vschema_file $HOME/sandboxes/activity_feed/demo_app/schemas/vschema_sharded.json  test_keyspace
+```
 
 Notice that the client that was subscribed to two feeds ids now it's getting errors.
 
 6) Use vtexplain to show what's the problem with the query. 
 
-
 7) Stop the app and change docker-compose.yml `DB_ADAPTER` env variable to be vitess
 
-8) Start everything again. Notice that queries work!
+8) Start everything again. Start the writers and clients again:
+```
+docker-compose exec -e FEED_ID=7 app /bin/bash -c 'ruby cli/client.rb'  # Use same feed id as first writer from previous run
+docker-compose exec -e FEED_ID=8 app /bin/bash -c 'ruby cli/client.rb'  # Use Same feed id as first writer from previous run
+docker-compose exec app /bin/bash -c 'ruby cli/client.rb 7,8'
+docker-compose exec app /bin/bash -c 'ruby cli/client.rb 7'
+```
 
 9) Move to resharding.
