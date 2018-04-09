@@ -3,6 +3,8 @@ require 'eventmachine'
 require 'rest-client'
 require 'securerandom'
 require 'json'
+require 'table_print'
+require 'ostruct'
 
 STDOUT.sync = true
 HOST = ENV['APP_HOST'] || '127.0.0.1'
@@ -41,17 +43,26 @@ EM.run {
   end
 
   ws.on :message do |event|
+    puts ""
+    puts "New data for subscription! Processing messages after: #{latest_item}"
+    puts ""
+    puts "----------------"
     begin
+      feeds = []
       if parsed_feed_ids.size == 1
-        feed = get_single_feed(parsed_feed_ids[0], latest_item)
-        latest_item = feed[0]["data"]["created_at"]
-        puts feed
+        feeds = get_single_feed(parsed_feed_ids[0], latest_item)
+
       else
-        feed = get_feed_ids(parsed_feed_ids, latest_item)
-        unless feed.empty?
-          latest_item = feed[0]["data"]["created_at"]
-          puts feed
+        feeds = get_feed_ids(parsed_feed_ids, latest_item)
+      end
+      unless feeds.empty?
+        feeds = feeds.map do |feed_item| 
+          data = feed_item["data"]
+          data = data.merge("text" => feed_item["data"]["payload"]["text"])
+          OpenStruct.new(data)
         end
+        latest_item = feeds[0].created_at
+        tp feeds, :id, :feed_id, :text => { width:  140 }
       end
     rescue => e
       puts e

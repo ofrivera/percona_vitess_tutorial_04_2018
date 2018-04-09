@@ -13,4 +13,6 @@ gem 'activesupport', '~> 5.0'
 gem 'loader'
 gem 'rest-client'
 gem 'faye-websocket'
+gem 'faker'
+gem 'table_print'
 

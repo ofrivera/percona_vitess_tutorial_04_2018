@@ -38,7 +38,7 @@ class FeedItem
 
   def save!
     return self if self.id != nil
-    self.created_at = Time.now.to_i
+    self.created_at = Time.now.strftime("%s%6N")
     id = DbDAO.client.insert_feed_item(self)
     self.id = id
     self

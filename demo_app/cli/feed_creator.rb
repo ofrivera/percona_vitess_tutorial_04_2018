@@ -1,5 +1,6 @@
 require 'rest-client'
 require 'securerandom'
+require 'faker'
 require 'json'
 HOST = ENV['APP_HOST'] || '127.0.0.1'
 PORT = ENV['APP_PORT'] || '3000'
@@ -10,7 +11,7 @@ FEED_ID = ENV['FEED_ID']
 
 
 STDOUT.sync = true
-user = { "data": { "name": "rafael", "email": "rafael+#{SecureRandom.hex}@gmail.com" } }
+user = { "data": { "name": Faker::Name.name, "email": Faker::Internet.email } }
 
 feed_id = FEED_ID
 
@@ -28,9 +29,14 @@ unless FEED_ID
   feed_id = user["data"]["feeds"][0]["data"]["id"]
 end
 
+
+def quote_string(s)
+  s.gsub('\\'.freeze, "\&\&".freeze).gsub("'".freeze, "''".freeze)
+end
+
 puts "Going to start posting feed items to user feed id #{feed_id}"
 (1..ITERATIONS).each do |i|
-  feed_item = {	"data": { "type": "t", "text": "This is a random post: #{SecureRandom.hex}" } }
+  feed_item = {	"data": { "type": "t", "text": quote_string(Faker::Lorem.sentence(3))  } }
   response = RestClient.post(
     URL + "/activity_feeds/#{feed_id}",
     feed_item.to_json,
