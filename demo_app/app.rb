@@ -65,6 +65,23 @@ class App < Sinatra::Base
     json @feed_items.map(&:to_json)
   end
 
+  post '/activity_feeds/:feed_id' do |feed_id|
+    @feed = Feed.find_by_id(feed_id)
+    response = { code: 4, status: '404', title: 'feed not found' }
+    halt 404, json(response) unless @feed
+    payload = JSON.parse(request.body.read)
+    json_feed_item = ActiveSupport::HashWithIndifferentAccess.new(payload["data"])
+    response = { code: 2, status: '422', title: 'feed not found' }
+    halt 422, json(response) unless  json_feed_item
+    halt 422, json(response) unless  FeedItemTypes.valid?(json_feed_item['type'])
+    @feed.add_text_item(json_feed_item[:text])
+    if settings.sockets[feed_id]
+      msg = {data: { type: 'feed_updated', feed_id: feed_id}}.to_json
+      EM.next_tick { settings.sockets[feed_id].each{|s| s.send(msg) } }
+    end
+    status 201
+  end
+
   get '/subscribe/activity_feeds' do
     if !request.websocket?
       response = { code: 1, status: '422', title: "This endpoint should be used with websocket connections"}
@@ -101,20 +118,5 @@ class App < Sinatra::Base
     end
   end
 
-  post '/activity_feeds/:feed_id' do |feed_id|
-    @feed = Feed.find_by_id(feed_id)
-    response = { code: 4, status: '404', title: 'feed not found' }
-    halt 404, json(response) unless @feed
-    payload = JSON.parse(request.body.read)
-    json_feed_item = ActiveSupport::HashWithIndifferentAccess.new(payload["data"])
-    response = { code: 2, status: '422', title: 'feed not found' }
-    halt 422, json(response) unless  json_feed_item
-    halt 422, json(response) unless  FeedItemTypes.valid?(json_feed_item['type'])
-    @feed.add_text_item(json_feed_item[:text])
-    if settings.sockets[feed_id]
-      msg = {data: { type: 'feed_updated', feed_id: feed_id}}.to_json
-      EM.next_tick { settings.sockets[feed_id].each{|s| s.send(msg) } }
-    end
-    status 201
-  end
+
 end

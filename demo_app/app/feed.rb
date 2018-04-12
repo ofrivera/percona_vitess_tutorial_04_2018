@@ -26,7 +26,7 @@ class Feed
 
   def save!
     return self if self.id != nil
-    self.created_at = Time.now.strftime("%s%6N")
+    self.created_at =  self.updated_at = Time.now.strftime("%s%6N")
     id = DbDAO.client.insert_feed(self)
     self.id = id
     self
