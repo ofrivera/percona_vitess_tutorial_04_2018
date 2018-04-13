@@ -26,7 +26,7 @@ end
 
 def get_feed_ids(ids, after_timestamp)
   response = RestClient.get(
-    "http://" + URL + "/activity_feeds/subscription?feed_ids=#{ids.join(',')}&since=#{after_timestamp}",
+    "http://" + URL + "/activity_feeds/follow?feed_ids=#{ids.join(',')}&since=#{after_timestamp}",
     {content_type: :json, accept: :json})
   fail "Couldn't fetch feed #{response}" unless response.code == 200
   JSON.parse(response.body)

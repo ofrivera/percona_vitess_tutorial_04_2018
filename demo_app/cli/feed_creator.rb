@@ -16,6 +16,7 @@ user = { "data": { "name": Faker::Name.name, "email": Faker::Internet.email } }
 feed_id = FEED_ID
 
 unless FEED_ID
+  puts user.to_json
   response = RestClient.post(
     URL + "/users",
     user.to_json,

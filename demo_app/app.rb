@@ -44,7 +44,8 @@ class App < Sinatra::Base
     end
   end
 
-  get '/activity_feeds/subscription' do
+  # Follow a list of feetds provided by ?feed_ids=1,2,3,4
+  get '/activity_feeds/follow' do
     feed_ids = params[:feed_ids].split(',')
     if feed_ids.empty?
       response = { code: 1, status: '422', title: "invalid subscription ids"}
