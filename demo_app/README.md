@@ -8,7 +8,7 @@ docker-compose up
 ```
 3) Start one client writer:
 ```
-docker-compose exec app /bin/bash -c 'ruby cli/feed_creator.rb
+docker-compose exec app /bin/bash -c 'ruby cli/feed_creator.rb'
 ```
 
 4) Notice that previous command created two users and it's adding items to their feeds. Copy feed ids from output and then use it as paramater in the following command. 
