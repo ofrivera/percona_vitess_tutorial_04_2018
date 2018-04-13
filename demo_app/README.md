@@ -1,15 +1,14 @@
 ### Instructions
 
-1) Set docker-compose env variables to point to proper vitess cluster
+1) Set docker-compose env variables to point to proper vitess cluster in `docker-compose.yml`.
 
 2) Run the following command:
 ```
 docker-compose up 
 ```
-3) Start two client writers:
+3) Start one client writer:
 ```
-docker-compose exec app /bin/bash -c 'ruby cli/client.rb
-docker-compose exec app /bin/bash -c 'ruby cli/client.rb
+docker-compose exec app /bin/bash -c 'ruby cli/feed_creator.rb'
 ```
 
 4) Notice that previous command created two users and it's adding items to their feeds. Copy feed ids from output and then use it as paramater in the following command. 
@@ -20,12 +19,7 @@ docker-compose exec app /bin/bash -c 'ruby cli/client.rb
   docker-compose exec app /bin/bash -c 'ruby cli/client.rb FEED_ID'
   ```
 
-  Start a second client that subscribes to two feed ids.
-  ```
-  docker-compose exec app /bin/bash -c 'ruby cli/client.rb FEED_ID_1, FEED_ID_2'
-  ```
-
-5) Change the vschema to be sharded
+6) Change the vschema to be sharded
 
 ```
 ./lvtctl.sh ApplyVschema -vschema_file $HOME/sandboxes/activity_feed/demo_app/schemas/vschema_sharded.json  test_keyspace
