@@ -16,6 +16,10 @@ class Feed
     feed_item
   end
 
+  def user
+    @user ||= User.find_by_id(self.user_id)
+  end
+
   def self.find_by_id(id)
     DbDAO.client.select_feed(id)
   end
@@ -37,7 +41,7 @@ class Feed
       data: {
         id: self.id,
         type: 'feed',
-        user_id: self.user_id,
+        user:  { id: user.id, name: user.name },
         description: self.description,
         created_at: self.created_at,
         updated_at: self.updated_at

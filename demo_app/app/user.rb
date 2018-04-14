@@ -17,6 +17,10 @@ class User
     Feed.find_by_user_id(self.id)
   end
 
+  def self.find_by_id(id)
+    DbDAO.client.select_user(id)
+  end
+
   def save!
     return true if self.id != nil
     user_id = DbDAO.client.insert_user(self)

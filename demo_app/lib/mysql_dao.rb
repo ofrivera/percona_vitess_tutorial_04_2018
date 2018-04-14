@@ -6,6 +6,7 @@ class MySQLDao
   INSERT_FEED_ITEM="INSERT INTO feed_items (id, feed_id, item_type, created_at, payload) VALUES (%d, %d, '%s', %d, '%s')"
   SELECT_USER_FEEDS="SELECT * from feeds where user_id = %d LIMIT %d"
   SELECT_FEED="SELECT * from feeds where id = %d"
+  SELECT_USER="SELECT * from users where id = %d"
   SELECT_FEED_ITEMS="SELECT * from feed_items where feed_id = %d AND created_at > %d ORDER by created_at desc LIMIT %d"
 
   def select_subscribeed_feeds_sql
@@ -64,6 +65,15 @@ class MySQLDao
     ).to_a.first
     return nil unless raw_feed
     Feed.new(ActiveSupport::HashWithIndifferentAccess.new(raw_feed))
+  end
+
+  def select_user(user_id)
+    raw_user = xquery(
+      SELECT_USER,
+      user_id
+    ).to_a.first
+    return nil unless raw_user
+    User.new(ActiveSupport::HashWithIndifferentAccess.new(raw_user))
   end
 
   def insert_feed_item(feed_item)

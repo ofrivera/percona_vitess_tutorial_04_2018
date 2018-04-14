@@ -16,9 +16,10 @@ class App < Sinatra::Base
   end
 
   set :sockets, {}
-
+  set :public_folder, File.dirname(__FILE__) + '/ui'
 
   get '/' do
+    logger.info(File.dirname(__FILE__) + '/ui')
     json "ok": 200
   end
 
@@ -58,6 +59,14 @@ class App < Sinatra::Base
     json @feed_items.map(&:to_json)
   end
 
+  get '/feeds/:feed_id' do |feed_id|
+    @feed = Feed.find_by_id(feed_id)
+    response = { code: 4, status: '404', title: 'feed not found' }
+    halt 404, json(response) unless @feed
+    json @feed.to_json
+  end
+
+
   get '/activity_feeds/:feed_id' do |feed_id|
     @feed_items = FeedItem.find_by_feed_id(
       feed_id: feed_id,
@@ -67,6 +76,7 @@ class App < Sinatra::Base
   end
 
   post '/activity_feeds/:feed_id' do |feed_id|
+    response.headers["Access-Control-Allow-Origin"] = "*"
     @feed = Feed.find_by_id(feed_id)
     response = { code: 4, status: '404', title: 'feed not found' }
     halt 404, json(response) unless @feed

@@ -30,8 +30,6 @@ class FeedItem
     DbDAO.client.select_feed_items_for_subscription(feed_ids, since, 100)
   end
 
-
-
   def self.text_feed_item_payload(text)
     { text: text }.to_json
   end
