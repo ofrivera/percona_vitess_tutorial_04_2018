@@ -36,7 +36,7 @@ function message(feed, user){
 }
 
 
-var getUrlParameter = function getUrlParameter(sParam) {
+function getUrlParameter(sParam) {
     var sPageURL = decodeURIComponent(window.location.search.substring(1)),
         sURLVariables = sPageURL.split('&'),
         sParameterName,
@@ -51,47 +51,93 @@ var getUrlParameter = function getUrlParameter(sParam) {
     }
 };
 
+var feeds = {};
+var latestItem = 0;
+var feedIds= getUrlParameter('feed_ids').split(',');
+
 $(document).ready(function() {
 	  if(!("WebSocket" in window)){
 		    alert('Oh no, you need a browser that supports WebSockets.');
 	  }else{
 	      //The user has WebSockets
-        var feedIds= getUrlParameter('feed_ids').split(',');
-        var latestItem = 0;
-        var feeds = {};
+        var feedsCalls = [];
         $.each(feedIds, function(index, feedId) {
-            $.get(`http://localhost:3000/feeds/${feedId}`, function(feed) {
-                feeds[feedId] = feed.data.user;
-            });
+            feedsCalls.push(
+                $.get(`http://localhost:3000/feeds/${feedId}`, function(feed) {
+                    feeds[feedId] = feed.data.user;})
+            );
         });
-
-        if (feedIds.length == 1) {
-            $.get(`http://localhost:3000/activity_feeds/${feedIds[0]}`, function( data ) {
-                $.each(data, function(index, feedItem) {
-                    if (index == 0) {
-                        latestItem = feedItem.data.created_at;
-                    }
-                    message(feedItem, feeds[feedItem.data.feed_id]);
-                });
-            });
-        }
-	      //connect();
+        $.when.apply(undefined, feedsCalls).done(function (feedsCallDone){
+            if (feedIds.length == 1) {
+                getSingleFeed();
+            } else {
+                followFeeds();
+            }
+	          connect();
+        });
     }
 });
 
+
+function getSingleFeed() {
+    $.get(`http://localhost:3000/activity_feeds/${feedIds[0]}?&since=${latestItem}`, function( data ) {
+        $.each(data, function(index, feedItem) {
+            if (index == 0) {
+                latestItem = feedItem.data.created_at;
+            }
+            message(feedItem, feeds[feedItem.data.feed_id]);
+        });
+    }).fail(function() {
+        var feedItem = {
+            data: {
+                payload: {
+                    text: "Error loading feed..."
+                },
+                created_at: "0"}
+        };
+        var user = {name: "Invalid user"};
+        message(feedItem, user);
+    });
+}
+
+function followFeeds() {
+    $.get(`http://localhost:3000/activity_feeds/follow?feed_ids=${feedIds}&since=${latestItem}`, function( data ) {
+        $.each(data, function(index, feedItem) {
+            if (index == 0) {
+                latestItem = feedItem.data.created_at;
+            }
+            message(feedItem, feeds[feedItem.data.feed_id]);
+        });
+    }).fail(function() {
+        var feedItem = {
+            data: {
+                payload: {
+                    text: "Error loading feed..."
+                },
+                created_at: "0"}
+        };
+        var user = {name: "Invalid user"};
+        message(feedItem, user);
+    });
+}
 
 function connect(){
     try{
 
 	      var socket;
-	      var host = "ws://localhost:3000/socket/server/startDaemon.php";
-        socket = new WebSocket(host);
+	      var host = `ws://localhost:3000/subscribe/activity_feeds?feed_ids=${feedIds}`;
+        socket = new window.WebSocket(host);
 
         socket.onopen = function(){
             console.log("Socket connection opened.");
         };
 
         socket.onmessage = function(msg){
+            if (feedIds.length == 1) {
+                getSingleFeed();
+            } else {
+                followFeeds();
+            }
         };
 
         socket.onclose = function(){

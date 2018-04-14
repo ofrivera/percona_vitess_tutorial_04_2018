@@ -13,6 +13,7 @@ STDOUT.sync = true
 user = { "data": { "name": Faker::Name.name, "email": Faker::Internet.email } }
 
 feed_ids = ARGV[0]
+raise "Comma separated feeds need to be provided as a parameter" unless feed_ids
 parsed_feed_ids = feed_ids.split(',')
 
 if parsed_feed_ids.empty?
