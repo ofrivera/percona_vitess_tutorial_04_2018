@@ -1,0 +1,10 @@
+{
+    "hostname": "ec2-34-208-78-29.us-west-2.compute.amazonaws.com",
+    "configured_hosts": [
+        "ec2-34-208-78-29.us-west-2.compute.amazonaws.com"
+    ],
+    "ports": {
+        "web_port": 15000,
+        "grpc_port": 15999
+    }
+}

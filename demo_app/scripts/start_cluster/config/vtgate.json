@@ -1,0 +1,11 @@
+{
+    "hostname": "ec2-34-208-78-29.us-west-2.compute.amazonaws.com",
+    "configured_hosts": [
+        "ec2-34-208-78-29.us-west-2.compute.amazonaws.com"
+    ],
+    "ports": {
+        "mysql_server_port": 15306,
+        "web_port": 15001,
+        "grpc_port": 15991
+    }
+}
