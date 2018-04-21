@@ -20,7 +20,9 @@ class MySQLDao
       password: password,
       host: host,
       port: port,
-      database: database
+      database: database,
+      reconnect: true
+
     )
 
     @user_ids = (xquery("select id from users order by id DESC limit 1").first || {"id" => 0})["id"] + 1
